@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receive SMS - Qatar Number</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styles for the app */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6; /* Light gray background */
+    }
+    .header-bg {
+      background-color: #1a73e8; /* Google Blue */
+    }
+    .nav-bg {
+      background-color: #333;
+    }
+    .message-container {
+      background-color: #ffffff;
+      border-radius: 0.75rem; /* rounded-xl */
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+      padding: 1.5rem; /* p-6 */
+      display: flex;
+      flex-direction: column;
+      max-height: 60vh; /* Limit height and enable scrolling */
+      overflow-y: auto;
+    }
+    .message-bubble {
+      background-color: #e2e8f0; /* Light gray for message bubbles */
+      border-radius: 0.75rem; /* rounded-lg */
+      padding: 0.75rem 1rem; /* p-3 px-4 */
+      margin-bottom: 0.75rem; /* mb-3 */
+      word-wrap: break-word; /* Ensure long words break */
+      max-width: 80%; /* Limit bubble width */
+      align-self: flex-start; /* Default to incoming */
+    }
+    .message-bubble.incoming {
+      background-color: #d1fae5; /* Light green for incoming messages */
+      align-self: flex-start;
+    }
+    .message-bubble.outgoing {
+      background-color: #bfdbfe; /* Light blue for outgoing messages (if applicable) */
+      align-self: flex-end;
+    }
+    .refresh-button {
+      background-color: #28a745; /* Green */
+      transition: background-color 0.2s ease-in-out;
+    }
+    .refresh-button:hover {
+      background-color: #218838;
+    }
+    .back-button {
+      background-color: #4a5568; /* Dark gray */
+      transition: background-color 0.2s ease-in-out;
+    }
+    .back-button:hover {
+      background-color: #2d3748;
+    }
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Ad containers - to collapse when empty */
+    .ad-slot {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      text-align: center;
+      width: 100%;
+      transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin 0.5s ease-out;
+      overflow: hidden;
+      max-height: 500px;
+      opacity: 1;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    .ad-slot.collapsed {
+      max-height: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+      opacity: 0;
+    }
+    .ad-slot iframe {
+      border: none;
+      display: block;
+      overflow: hidden;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      transition: width 0.5s ease-out, height 0.5s ease-out, opacity 0.5s ease-out;
+    }
+    #native-ad-slot.grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      justify-items: center;
+      align-items: flex-start;
+    }
+    #native-ad-slot.grid-container iframe {
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+    }
+    .direct-link-container {
+      margin-top: 15px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .direct-link-container a {
+      color: #1a73e8;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+  </style>
+
+  <script type='text/javascript' src='//pl27076189.profitableratecpm.com/bd/9d/a0/bd9da0ea1fb5ebaf0db6f76aa02c0300.js'></script>
+  </head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="header-bg text-white p-6 text-center text-3xl font-bold rounded-b-lg shadow-md">
+    <div class="flex items-center justify-center relative">
+      <a href="qatar.html" class="absolute left-4 text-white text-xl hover:text-blue-200 transition-colors">
+        &larr; Back
+      </a>
+      <span>Receive SMS</span>
+    </div>
+  </header>
+
+  <nav class="nav-bg p-4 text-center shadow-sm">
+    <a href="index.html" class="text-white mx-4 text-lg font-semibold hover:text-blue-200 transition-colors">Home</a>
+    <a href="#" class="text-white mx-4 text-lg font-semibold hover:text-blue-200 transition-colors">About Us</a>
+    <a href="#" class="text-white mx-4 text-lg font-semibold hover:text-blue-200 transition-colors">Contact</a>
+  </nav>
+
+  <main class="flex-grow container mx-auto p-6">
+    <h3 class="text-3xl font-bold text-gray-800 mb-6 text-center flex items-center justify-content-center">
+      Messages for <span id="current-number-display" class="mx-2">+974 55 123 456</span>
+    </h3>
+
+    <div id="native-ad-slot" class="ad-slot mx-auto grid-container">
+      </div>
+    <div id="messages-list" class="message-container">
+      </div>
+
+    <div class="flex justify-center mt-6">
+      <button onclick="refreshMessages()" class="refresh-button text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+        <span id="refreshButtonText">Refresh Messages</span>
+        <span id="loadingSpinner" class="loading-spinner hidden"></span>
+      </button>
+    </div>
+
+    <div id="banner-728x90-ad-slot" class="ad-slot mx-auto mt-6">
+      </div>
+    <div class="direct-link-container">
+      <p>
+        <a href="https://www.profitableratecpm.com/rpyik3mwtc?key=2d55950f1a1ec397c4aa2852ea2ae6a6" target="_blank">
+          Click here to see our other services!
+        </a>
+      </p>
+    </div>
+
+  </main>
+
+  <footer class="bg-gray-800 text-white p-6 text-center text-sm mt-10 rounded-t-lg shadow-md">
+    &copy; 2025 Free SMS Box. All rights reserved.
+  </footer>
+
+  <script type='text/javascript' src='//pl27076196.profitableratecpm.com/88/a6/4b/88a64b874b1a42ceee80beec24d7f611.js'></script>
+  <script>
+    var currentNumber = ''; // Store the currently displayed number
+    let qatarNumbersData = {}; // Object to store messages for each Qatar number
+
+    // Define ad configurations (unchanged)
+    const adConfigs = {
+      native: {
+        scripts: [
+          { async: true, 'data-cfasync': false, src: '//pl27076176.profitableratecpm.com/36c71a4fca369dbf689c31baada8259d/invoke.js' }
+        ],
+        divs: [
+          { id: 'container-36c71a4fca369dbf689c31baada8259d' }
+        ],
+        height: 250,
+        width: 300
+      },
+      banner728x90: {
+        key: 'dba9c0c7da688537036a970dd8eb8984',
+        height: 90,
+        width: 728
+      }
+    };
+
+    /**
+     * Loads an advertisement within an iframe to isolate its scripts and prevent layout shifts.
+     * @param {string} containerId - The ID of the HTML element where the iframe will be appended.
+     * @param {object} adConfig - Configuration object for the ad.
+     */
+    function loadAdInIframe(containerId, adConfig) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.classList.remove('collapsed');
+      container.innerHTML = '';
+
+      const iframes = [];
+
+      if (adConfig.scripts && adConfig.divs && containerId === 'native-ad-slot') {
+        adConfig.divs.forEach((divData, index) => {
+          const iframe = document.createElement('iframe');
+          iframe.style.width = '1px';
+          iframe.style.height = '1px';
+          iframe.style.opacity = '0';
+          iframe.style.border = 'none';
+          iframe.style.overflow = 'hidden';
+          iframe.scrolling = 'no';
+          iframe.setAttribute('loading', 'lazy');
+          iframe.classList.add('native-ad-iframe');
+
+          container.appendChild(iframe);
+          iframes.push(iframe);
+
+          const iframeDoc = iframe.contentWindow.document;
+          iframeDoc.open();
+          iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>body { margin: 0; overflow: hidden; }</style>
+            </head>
+            <body>
+              <div id="${divData.id}"></div>
+            </body>
+            </html>
+          `);
+          iframeDoc.close();
+
+          const scriptData = adConfig.scripts[index];
+          if (scriptData) {
+            const script = iframeDoc.createElement('script');
+            script.type = 'text/javascript';
+            if (scriptData.src) {
+              script.src = scriptData.src;
+              if (scriptData.async !== undefined) script.async = script.async;
+              if (scriptData['data-cfasync'] !== undefined) script.dataset.cfasync = scriptData['data-cfasync'];
+            } else if (scriptData.textContent) {
+              script.textContent = scriptData.textContent;
+            }
+            iframeDoc.body.appendChild(script);
+          }
+        });
+      } else {
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '1px';
+        iframe.style.height = '1px';
+        iframe.style.opacity = '0';
+        iframe.style.border = 'none';
+        iframe.style.overflow = 'hidden';
+        iframe.scrolling = 'no';
+        iframe.setAttribute('loading', 'lazy');
+
+        container.appendChild(iframe);
+        iframes.push(iframe);
+
+        const iframeDoc = iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>body { margin: 0; overflow: hidden; }</style>
+          </head>
+          <body>
+            <div id="ad-content-wrapper"></div>
+          </body>
+          </html>
+        `);
+        iframeDoc.close();
+
+        const adContentWrapper = iframeDoc.getElementById('ad-content-wrapper');
+
+        if (adConfig.key) {
+          const scriptOptions = iframeDoc.createElement('script');
+          scriptOptions.type = 'text/javascript';
+          scriptOptions.textContent = "atOptions = {" +
+            "'key' : '" + adConfig.key + "'," +
+            "'format' : 'iframe'," +
+            "'height' : " + adConfig.height + "," +
+            "'width' : " + adConfig.width + "," +
+            "'params' : {}" +
+            "};";
+          adContentWrapper.appendChild(scriptOptions);
+
+          const scriptInvoke = iframeDoc.createElement('script');
+          scriptInvoke.type = 'text/javascript';
+          scriptInvoke.src = `//www.highperformanceformat.com/${adConfig.key}/invoke.js`;
+          adContentWrapper.appendChild(scriptInvoke);
+        }
+      }
+
+      setTimeout(() => {
+        let anyAdLoaded = false;
+        iframes.forEach(iframe => {
+          try {
+            if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.body.scrollHeight > 50) {
+              iframe.style.width = `${adConfig.width}px`;
+              iframe.style.height = `${adConfig.height}px`;
+              iframe.style.opacity = '1';
+              anyAdLoaded = true;
+            } else {
+              iframe.style.width = '0px';
+              iframe.style.height = '0px';
+              iframe.style.opacity = '0';
+            }
+          } catch (e) {
+            iframe.style.width = '0px';
+            iframe.style.height = '0px';
+            iframe.style.opacity = '0';
+          }
+        });
+
+        if (!anyAdLoaded) {
+          container.classList.add('collapsed');
+        } else {
+          container.classList.remove('collapsed');
+        }
+      }, 1500);
+    }
+
+    /**
+     * Loads advertisements into their respective containers.
+     */
+    function loadAds() {
+      const nativeAdSlotContainer = document.getElementById('native-ad-slot');
+      const banner728x90AdSlotContainer = document.getElementById('banner-728x90-ad-slot');
+
+      if (nativeAdSlotContainer) {
+        nativeAdSlotContainer.innerHTML = '';
+        nativeAdSlotContainer.classList.add('collapsed');
+        loadAdInIframe('native-ad-slot', adConfigs.native);
+      }
+      if (banner728x90AdSlotContainer) {
+        banner728x90AdSlotContainer.innerHTML = '';
+        banner728x90AdSlotContainer.classList.add('collapsed');
+        loadAdInIframe('banner-728x90-ad-slot', adConfigs.banner728x90);
+      }
+    }
+
+    /**
+     * Generates a default set of dummy messages for a given number.
+     * @param {string} number - The phone number for which to generate messages.
+     * @returns {Array<Object>} An array of dummy message objects.
+     */
+    function generateDummyMessages(number) {
+        const platforms = [
+            "Ooredoo Qatar", "Vodafone Qatar",
+            "Qatar National Bank (QNB)", "Commercial Bank of Qatar (CBQ)", "Doha Bank", "Masraf Al Rayan", "Qatar Islamic Bank (QIB)",
+            "Ehteraz", "Hukoomi", "Snoonu", "Rafeeq", "Talabat Qatar", "Urban Point",
+            "Qatar Airways", "Hamad International Airport (HIA)", "Karwa (Mowasalat)",
+            "Ministry of Interior (MOI)", "Qatar General Electricity & Water Corp (Kahramaa)", "Qatar Post",
+            "Msheireb Properties", "The Pearl-Qatar",
+            "WhatsApp", "Facebook", "Instagram", "TikTok", "X (Twitter)", "YouTube",
+            "Netflix Qatar", "Amazon Prime Video", "OSN Streaming", "beIN SPORTS"
+        ];
+
+        const messages = [];
+        const messageTemplates = [
+            "Your verification code is {code}. Do not share this code.",
+            "New notification from {platform}: {content}. Check it now!",
+            "Your {platform} account security code is {code}. Use it to log in.",
+            "A new message from {platform}: '{content}'.",
+            "Important update from {platform}: {content}.",
+            "Your {platform} password reset code is {code}.",
+            "You have a new alert from {platform}: {content}.",
+            "Reminder from {platform}: {content}."
+        ];
+
+        // Generate 8-12 messages for variety
+        const numberOfMessages = Math.floor(Math.random() * 5) + 8; // Random between 8 and 12
+
+        for (let i = 0; i < numberOfMessages; i++) {
+            const randomPlatform = platforms[Math.floor(Math.random() * platforms.length)];
+            const randomTemplate = messageTemplates[Math.floor(Math.random() * messageTemplates.length)];
+            const code = Math.floor(100000 + Math.random() * 900000);
+            const now = new Date();
+            // Generate a random time within the last 48 hours for initial messages
+            const randomMinutesAgo = Math.floor(Math.random() * 2880); // 2880 minutes in 48 hours
+            now.setMinutes(now.getMinutes() - randomMinutesAgo);
+
+            let content = "";
+            if (randomTemplate.includes("{code}")) {
+                content = randomTemplate.replace("{code}", code);
+            } else {
+                const genericContents = [
+                    "Your order has shipped.",
+                    "You have a new friend request.",
+                    "Someone liked your post.",
+                    "New trending topic.",
+                    "Your bill is due soon.",
+                    "Security alert: unusual activity detected.",
+                    "Your appointment is confirmed.",
+                    "New video uploaded by your favorite creator."
+                ];
+                content = randomTemplate.replace("{content}", genericContents[Math.floor(Math.random() * genericContents.length)]);
+            }
+            content = content.replace("{platform}", randomPlatform);
+
+            messages.push({
+                from: randomPlatform,
+                content: content,
+                timestamp: now.toISOString() // Store ISO string for easy date reconstruction
+            });
+        }
+        return messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort by newest first
+    }
+
+    /**
+     * Formats a timestamp into a human-readable "X hours/minutes ago" string.
+     * @param {string} timestamp - ISO string of the message timestamp.
+     * @returns {string} Formatted time string.
+     */
+    function formatTimeAgo(timestamp) {
+        const messageDate = new Date(timestamp);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - messageDate) / 1000);
+
+        if (diffInSeconds < 60) {
+            return `${diffInSeconds} seconds ago`;
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        } else if (diffInSeconds < 86400) { // Less than 24 hours
+            const hours = Math.floor(diffInSeconds / 3600);
+            const remainingMinutes = Math.floor((diffInSeconds % 3600) / 60);
+            if (hours > 0) {
+                return `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''} ago`;
+            } else {
+                return `${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''} ago`;
+            }
+        } else {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+        }
+    }
+
+    /**
+     * Renders messages for the given number from localStorage.
+     * @param {string} number - The phone number for which to display messages.
+     */
+    function displayMessages(number) {
+      const messagesList = document.getElementById('messages-list');
+      messagesList.innerHTML = ''; // Clear existing messages
+
+      // Load messages from localStorage if available, otherwise generate and save
+      let storedMessages = localStorage.getItem(`messages_${number}`);
+      if (storedMessages) {
+          qatarNumbersData[number] = JSON.parse(storedMessages);
+      } else {
+          qatarNumbersData[number] = generateDummyMessages(number);
+          localStorage.setItem(`messages_${number}`, JSON.stringify(qatarNumbersData[number]));
+      }
+
+      const messages = qatarNumbersData[number];
+
+      if (messages.length === 0) {
+        messagesList.innerHTML = '<p class="text-center text-gray-500 mt-4">No messages found for this number.</p>';
+        return;
+      }
+
+      messages.forEach(msg => {
+        const formattedTime = formatTimeAgo(msg.timestamp); // Format time
+        const messageHtml = `
+          <div class="message-bubble incoming">
+            <p class="text-sm font-semibold text-gray-700">From: ${msg.from}</p>
+            <p class="text-gray-800 mt-1">${msg.content}</p>
+            <p class="text-xs text-gray-500 text-right mt-1">${formattedTime}</p>
+          </div>
+        `;
+        messagesList.insertAdjacentHTML('beforeend', messageHtml);
+      });
+
+      messagesList.scrollTop = messagesList.scrollHeight;
+    }
+
+    /**
+     * Simulates fetching and displaying a new message for the current number.
+     * This new message will also be stored in localStorage.
+     */
+    async function refreshMessages() {
+      const messagesList = document.getElementById('messages-list');
+      const refreshButtonText = document.getElementById('refreshButtonText');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+
+      refreshButtonText.textContent = 'Refreshing...';
+      loadingSpinner.classList.remove('hidden');
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const platforms = [
+            "Ooredoo Qatar", "Vodafone Qatar",
+            "Qatar National Bank (QNB)", "Commercial Bank of Qatar (CBQ)", "Doha Bank", "Masraf Al Rayan", "Qatar Islamic Bank (QIB)",
+            "Ehteraz", "Hukoomi", "Snoonu", "Rafeeq", "Talabat Qatar", "Urban Point",
+            "Qatar Airways", "Hamad International Airport (HIA)", "Karwa (Mowasalat)",
+            "Ministry of Interior (MOI)", "Qatar General Electricity & Water Corp (Kahramaa)", "Qatar Post",
+            "Msheireb Properties", "The Pearl-Qatar",
+            "WhatsApp", "Facebook", "Instagram", "TikTok", "X (Twitter)", "YouTube",
+            "Netflix Qatar", "Amazon Prime Video", "OSN Streaming", "beIN SPORTS"
+        ];
+      const randomPlatform = platforms[Math.floor(Math.random() * platforms.length)];
+
+      const newMessage = {
+        from: randomPlatform,
+        content: `New message from ${randomPlatform}: Your code is ${Math.floor(Math.random() * 900000) + 100000}.`,
+        timestamp: new Date().toISOString()
+      };
+
+      qatarNumbersData[currentNumber].unshift(newMessage);
+      localStorage.setItem(`messages_${currentNumber}`, JSON.stringify(qatarNumbersData[currentNumber]));
+
+      displayMessages(currentNumber); // Re-render all messages including the new one
+
+      refreshButtonText.textContent = 'Refresh Messages';
+      loadingSpinner.classList.add('hidden');
+    }
+
+
+    // When the page loads, set the number and display messages
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      currentNumber = urlParams.get('number') || '+974 55 123 456'; // Default Qatar mobile number
+
+      document.getElementById('current-number-display').textContent = currentNumber;
+
+      displayMessages(currentNumber);
+      loadAds();
+    });
+  </script>
+
+</body>
+</html>
